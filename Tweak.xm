@@ -4,15 +4,21 @@
 
 @interface MTMaterialLayer : CALayer
 	@property (assign,getter=isReduceTransparencyEnabled,nonatomic) BOOL reduceTransparencyEnabled;
+	@property (assign,getter=isBlurEnabled,nonatomic) BOOL blurEnabled;
 @end
 
 @interface MTMaterialView : UIView
 	-(id)_materialLayer;
+	@property (assign,nonatomic) BOOL ignoresScreenClip;
 @end
 
 @interface FBSystemService : NSObject
   +(id)sharedInstance;
   -(void)exitAndRelaunch:(BOOL)arg1;
+@end
+
+@interface NCNotificationViewControllerView : UIView
+
 @end
 
 static BOOL wantsCorners = YES;
@@ -22,6 +28,8 @@ static BOOL lessTransparentNotif = YES;
 static BOOL lessTransparentPlayer = YES;
 static BOOL lessTransparentWidget = YES;
 static BOOL lessTransparentFolder = YES;
+static BOOL wantsRestrictedLines = YES;
+static int maxNumberOfLines = 2;
 
 %hook MTMaterialView
 	//-(id)_materialLayer
@@ -78,17 +86,48 @@ static BOOL lessTransparentFolder = YES;
 		if (wantsCorners && shouldChangeCornerRadius)
 		{
 			orig.cornerRadius = cornerRadius;
-
 			//Thanks @bengiannis
 			if (@available(iOS 13.0, *))
 			    orig.cornerCurve = kCACornerCurveContinuous;
 			else
-			    orig.continuousCorners = YES;
+				orig.continuousCorners = YES;
 
+			orig.masksToBounds = YES;
 		}
 
 		//return orig;
 
+	}
+%end
+
+//Fixes blurry corners for stacked notifications
+%hook NCNotificationViewControllerView
+
+	-(void)layoutSubviews
+	{
+		%orig;
+		
+		if (wantsCorners && lessTransparentNotif)
+			MSHookIvar<UIView*>(self,"_stackDimmingView").hidden = YES;
+	}
+%end
+
+//Restrict Max Notification Lines
+%hook NCNotificationShortLookView
+
+	-(void)setMaximumNumberOfPrimaryLargeTextLines:(unsigned long long)arg1
+	{
+		%orig(wantsRestrictedLines ? maxNumberOfLines : arg1);
+	}
+
+	-(void)setMaximumNumberOfSecondaryTextLines:(unsigned long long)arg1
+	{
+		%orig(wantsRestrictedLines ? maxNumberOfLines : arg1);
+	}
+
+	-(void)setMaximumNumberOfSecondaryLargeTextLines:(unsigned long long)arg1
+	{
+		%orig(wantsRestrictedLines ? maxNumberOfLines : arg1);
 	}
 %end
 
@@ -101,8 +140,11 @@ static void reloadSettings() {
 	NSMutableDictionary *prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/com.p2kdev.dusky.plist"];
 	if(prefs)
 	{
-		cornerRadius = [prefs objectForKey:@"cornerRadius"] ? [[prefs objectForKey:@"cornerRadius"] intValue] : cornerRadius;
+
+		wantsRestrictedLines = [prefs objectForKey:@"wantsRestrictedLines"] ? [[prefs objectForKey:@"wantsRestrictedLines"] boolValue] : wantsRestrictedLines;
+		maxNumberOfLines = [prefs objectForKey:@"maxNumberOfLines"] ? [[prefs objectForKey:@"maxNumberOfLines"] intValue] : maxNumberOfLines;
     wantsCorners = [prefs objectForKey:@"wantsCorners"] ? [[prefs objectForKey:@"wantsCorners"] boolValue] : wantsCorners;
+		cornerRadius = [prefs objectForKey:@"cornerRadius"] ? [[prefs objectForKey:@"cornerRadius"] intValue] : cornerRadius;
 		lessTransparentWidget = [prefs objectForKey:@"lessTransparentWidget"] ? [[prefs objectForKey:@"lessTransparentWidget"] boolValue] : lessTransparentWidget;
 		lessTransparentNotif = [prefs objectForKey:@"lessTransparentNotif"] ? [[prefs objectForKey:@"lessTransparentNotif"] boolValue] : lessTransparentNotif;
 		lessTransparentPlayer = [prefs objectForKey:@"lessTransparentPlayer"] ? [[prefs objectForKey:@"lessTransparentPlayer"] boolValue] : lessTransparentPlayer;
