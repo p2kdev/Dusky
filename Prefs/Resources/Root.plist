@@ -91,6 +91,36 @@
 
 			<dict>
 				<key>cell</key>
+				<string>PSSwitchCell</string>
+				<key>default</key>
+				<true/>
+				<key>defaults</key>
+				<string>com.p2kdev.dusky</string>
+				<key>key</key>
+				<string>lessTransparentSpotlight</string>
+				<key>label</key>
+				<string>Spotlight</string>
+				<key>PostNotification</key>
+				<string>com.p2kdev.dusky.settingschanged</string>
+			</dict>
+
+			<dict>
+				<key>cell</key>
+				<string>PSSwitchCell</string>
+				<key>default</key>
+				<false/>
+				<key>defaults</key>
+				<string>com.p2kdev.dusky</string>
+				<key>key</key>
+				<string>lessTransparentHomeScreen</string>
+				<key>label</key>
+				<string>HomeScreen</string>
+				<key>PostNotification</key>
+				<string>com.p2kdev.dusky.settingschanged</string>
+			</dict>
+
+			<dict>
+				<key>cell</key>
 				<string>PSGroupCell</string>
 				<key>label</key>
 				<string>Round Corners</string>
@@ -134,7 +164,7 @@
 				<key>cell</key>
 				<string>PSGroupCell</string>
 				<key>label</key>
-				<string>Misc</string>
+				<string>Restrict Notification Lines</string>
 			</dict>
 
 			<dict>

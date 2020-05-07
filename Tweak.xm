@@ -28,6 +28,8 @@ static BOOL lessTransparentNotif = YES;
 static BOOL lessTransparentPlayer = YES;
 static BOOL lessTransparentWidget = YES;
 static BOOL lessTransparentFolder = YES;
+static BOOL lessTransparentSpotlight = YES;
+static BOOL lessTransparentHomeScreen = NO;
 static BOOL wantsRestrictedLines = YES;
 static int maxNumberOfLines = 2;
 
@@ -66,6 +68,14 @@ static int maxNumberOfLines = 2;
 			orig.reduceTransparencyEnabled = YES;
 			shouldChangeCornerRadius = YES;
 		}
+
+		//HomeScreen Folder Background
+		if (([self.superview class] == objc_getClass("SBHomeScreenBackdropView")) && lessTransparentHomeScreen)
+			orig.reduceTransparencyEnabled = YES;
+
+		//Spotlight
+		if (([self.superview class] == objc_getClass("SBSearchBackdropView")) && lessTransparentSpotlight)
+			orig.reduceTransparencyEnabled = YES;
 
 		//Widgets
 		if (([self.superview class] == objc_getClass("WGWidgetPlatterView")) && lessTransparentWidget)
@@ -106,9 +116,12 @@ static int maxNumberOfLines = 2;
 	-(void)layoutSubviews
 	{
 		%orig;
-		
+
 		if (wantsCorners && lessTransparentNotif)
-			MSHookIvar<UIView*>(self,"_stackDimmingView").hidden = YES;
+		{
+			//MSHookIvar<UIView*>(self,"_stackDimmingView").alpha = 1;
+			MSHookIvar<UIView*>(self,"_stackDimmingView").layer.cornerRadius = cornerRadius;
+		}
 	}
 %end
 
@@ -150,6 +163,8 @@ static void reloadSettings() {
 		lessTransparentPlayer = [prefs objectForKey:@"lessTransparentPlayer"] ? [[prefs objectForKey:@"lessTransparentPlayer"] boolValue] : lessTransparentPlayer;
 		lessTransparentDock = [prefs objectForKey:@"lessTransparentDock"] ? [[prefs objectForKey:@"lessTransparentDock"] boolValue] : lessTransparentDock;
 		lessTransparentFolder = [prefs objectForKey:@"lessTransparentFolder"] ? [[prefs objectForKey:@"lessTransparentFolder"] boolValue] : lessTransparentFolder;
+		lessTransparentSpotlight = [prefs objectForKey:@"lessTransparentSpotlight"] ? [[prefs objectForKey:@"lessTransparentSpotlight"] boolValue] : lessTransparentSpotlight;
+		lessTransparentHomeScreen = [prefs objectForKey:@"lessTransparentHomeScreen"] ? [[prefs objectForKey:@"lessTransparentHomeScreen"] boolValue] : lessTransparentHomeScreen;
 	}
 }
 
