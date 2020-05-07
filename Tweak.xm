@@ -12,6 +12,10 @@
 	@property (assign,nonatomic) BOOL ignoresScreenClip;
 @end
 
+@interface PLShadowView : UIImageView
+
+@end
+
 @interface FBSystemService : NSObject
   +(id)sharedInstance;
   -(void)exitAndRelaunch:(BOOL)arg1;
@@ -50,6 +54,12 @@ static int maxNumberOfLines = 2;
 		}
 
 		//Notifications
+		if (([self.superview class] == objc_getClass("NCNotificationShortLookView")) && lessTransparentNotif)
+		{
+			orig.reduceTransparencyEnabled = YES;
+			shouldChangeCornerRadius = YES;
+		}
+
 		if (([self.superview class] == objc_getClass("NCNotificationShortLookView")) && lessTransparentNotif)
 		{
 			orig.reduceTransparencyEnabled = YES;
@@ -122,6 +132,18 @@ static int maxNumberOfLines = 2;
 			//MSHookIvar<UIView*>(self,"_stackDimmingView").alpha = 1;
 			MSHookIvar<UIView*>(self,"_stackDimmingView").layer.cornerRadius = cornerRadius;
 		}
+	}
+%end
+
+//Fixes blurry corners on Banners
+%hook PLShadowView
+
+	-(void)layoutSubviews
+	{
+		%orig;
+
+		if (([self.superview class] == objc_getClass("NCNotificationShortLookView")) && lessTransparentNotif && wantsCorners)
+			self.hidden = YES;
 	}
 %end
 

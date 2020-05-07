@@ -1,7 +1,7 @@
 Package: com.p2kdev.dusky
 Name: Dusky
 Depends: mobilesubstrate
-Version: 1.1.3
+Version: 1.1.4
 Architecture: iphoneos-arm
 Description: Reduces the Transparency on selected elements!
 Maintainer: P2KDev <p2kdev@gmail.com>
